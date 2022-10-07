@@ -3,6 +3,7 @@ Tests  utilities to convert data and projections
 """
 import sys
 
+import holoviews as hv
 import numpy as np
 import pandas as pd
 import pytest
@@ -194,6 +195,21 @@ class TestProcessXarray(TestCase):
         assert y == 'air'
         assert not by
         assert not groupby
+
+    def test_process_xarray_dataset_with_attrs(self):
+        import xarray as xr
+
+        data = xr.Dataset(
+            {"u": ("t", [1, 3]), "v": ("t", [4, 2])},
+            coords={"t": ("t", [0, 1], {"long_name": "time", "units": "s"})},
+        )
+
+        data, x, *_ = process_xarray(data=data, **self.default_kwargs)
+        assert isinstance(data, pd.DataFrame)
+        assert isinstance(x, hv.Dimension)
+        assert x.name == "t"
+        assert x.label == "time"
+        assert x.unit == "s"
 
 
 class TestGeoUtil(TestCase):

@@ -361,6 +361,11 @@ def is_geodataframe(data):
     return isinstance(data, pd.DataFrame) and hasattr(data, 'geom_type') and hasattr(data, 'geometry')
 
 
+def _create_dimension_xarray(dim):
+    label = dim.attrs.get("long_name", None)
+    unit = dim.attrs.get("units", None)
+    return hv.Dimension(dim.name, label=label or dim.name, unit=unit)
+
 def process_xarray(data, x, y, by, groupby, use_dask, persist, gridded,
                    label, value_label, other_dims, kind=None):
     import xarray as xr
@@ -440,6 +445,17 @@ def process_xarray(data, x, y, by, groupby, use_dask, persist, gridded,
 
         if groupby is None:
             groupby = [c for c in leftover_dims if c not in (by or [])]
+
+    if isinstance(x, str) and x != "index":
+       x =  _create_dimension_xarray(dataset[x])
+    elif isinstance(x, list):
+       x =  [_create_dimension_xarray(dataset[c]) for c in x]
+
+    if isinstance(y, str):
+       y =  _create_dimension_xarray(dataset[y])
+    elif isinstance(y, list):
+       y =  [_create_dimension_xarray(dataset[c]) for c in y]
+
     return data, x, y, by, groupby
 
 
