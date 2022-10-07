@@ -361,6 +361,11 @@ def is_geodataframe(data):
     return isinstance(data, pd.DataFrame) and hasattr(data, 'geom_type') and hasattr(data, 'geometry')
 
 
+def _create_dimension_xarray(dim):
+    label = dim.attrs.get("long_name", None)
+    unit = dim.attrs.get("units", None)
+    return hv.Dimension(dim.name, label=label or dim.name, unit=unit)
+
 def process_xarray(data, x, y, by, groupby, use_dask, persist, gridded,
                    label, value_label, other_dims, kind=None):
     import xarray as xr
@@ -385,8 +390,8 @@ def process_xarray(data, x, y, by, groupby, use_dask, persist, gridded,
 
     data_vars = list(dataset.data_vars)
     ignore = (by or []) + (groupby or [])
-    dims = [c for c in dataset.coords if dataset[c].shape != () and c not in ignore][::-1]
-    index_dims = [d for d in dims if d in dataset.indexes]
+    dims = [_create_dimension_xarray(dataset[c]) for c in dataset.coords if dataset[c].shape != () and c not in ignore][::-1]
+    index_dims = [d for d in dims if d.name in dataset.indexes]
 
     if gridded:
         data = dataset
@@ -407,7 +412,7 @@ def process_xarray(data, x, y, by, groupby, use_dask, persist, gridded,
             x = [d for d in dims if d != y][0]
         if (len(dims) > 2 and kind not in ('table', 'dataset') and not groupby):
             dims = list(data.coords[x].dims) + list(data.coords[y].dims)
-            groupby = [d for d in index_dims if d not in (x, y) and d not in dims and d not in other_dims]
+            groupby = [d.name for d in index_dims if d not in (x, y) and d not in dims and d.name not in other_dims]
     else:
         if use_dask:
             data = dataset.to_dask_dataframe()
