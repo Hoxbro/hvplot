@@ -525,7 +525,7 @@ class TestXarrayTitle:
         assert 'title' not in opts.kwargs
 
     def test_dataarray_3d_histogram_with_title(self, da, backend):
-        da_sel = da.sel(time=0)
+        da_sel = da.sel(time=0).copy()
         plot = da_sel.hvplot()  # Histogram and no widgets
         opts = Store.lookup_options(backend, plot, 'plot')
         assert opts.kwargs['title'] == 'time = 0'
