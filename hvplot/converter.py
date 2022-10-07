@@ -820,7 +820,7 @@ class HoloViewsConverter:
             if y is not None and y not in indexes:
                 indexes.append(y)
             for data_dim in data.dims:
-                if not any(data_dim in data[c].dims for c in indexes):
+                if not any(data_dim in data[str(c)].dims for c in indexes):
                     for coord in data.coords:
                         if coord not in indexes and {data_dim} == set(data[coord].dims):
                             indexes.append(data_dim)
@@ -2104,8 +2104,8 @@ class HoloViewsConverter:
 
         params = dict(self._relabel)
         xres, yres = data.attrs['res'] if 'res' in data.attrs else (1, 1)
-        xs = data.coords[x][::-1] if xres < 0 else data.coords[x]
-        ys = data.coords[y][::-1] if yres < 0 else data.coords[y]
+        xs = data.coords[str(x)][::-1] if xres < 0 else data.coords[str(x)]
+        ys = data.coords[str(y)][::-1] if yres < 0 else data.coords[str(y)]
         eldata = (xs, ys)
         for b in range(nbands):
             eldata += (data.isel(**{bands: b}).values,)
