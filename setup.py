@@ -30,7 +30,7 @@ def get_setup_version(reponame):
 install_requires = [
     'bokeh >=1.0.0',
     'colorcet >=2',
-    'holoviews >=1.11.0',
+    'holoviews >=1.15.0',
     'pandas',
     'numpy>=1.15',
     'packaging',
